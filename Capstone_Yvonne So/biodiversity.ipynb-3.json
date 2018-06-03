@@ -1,0 +1,1271 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "# Capstone 2: Biodiversity Project"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Introduction\n",
+    "You are a biodiversity analyst working for the National Parks Service.  You're going to help them analyze some data about species at various national parks.\n",
+    "\n",
+    "Note: The data that you'll be working with for this project is *inspired* by real data, but is mostly fictional."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Step 1\n",
+    "Import the modules that you'll be using in this assignment:\n",
+    "- `from matplotlib import pyplot as plt`\n",
+    "- `import pandas as pd`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "from matplotlib import pyplot as plt\n",
+    "import pandas as pd"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "# Step 2\n",
+    "You have been given two CSV files. `species_info.csv` with data about different species in our National Parks, including:\n",
+    "- The scientific name of each species\n",
+    "- The common names of each species\n",
+    "- The species conservation status\n",
+    "\n",
+    "Load the dataset and inspect it:\n",
+    "- Load `species_info.csv` into a DataFrame called `species`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "species = '/Users/miffyvo/Desktop/species_info.csv'\n",
+    "species = pd.read_csv(species)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Inspect each DataFrame using `.head()`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "  category                scientific_name  \\\n",
+      "0   Mammal  Clethrionomys gapperi gapperi   \n",
+      "1   Mammal                      Bos bison   \n",
+      "2   Mammal                     Bos taurus   \n",
+      "3   Mammal                     Ovis aries   \n",
+      "4   Mammal                 Cervus elaphus   \n",
+      "\n",
+      "                                        common_names conservation_status  \n",
+      "0                           Gapper's Red-Backed Vole                 NaN  \n",
+      "1                              American Bison, Bison                 NaN  \n",
+      "2  Aurochs, Aurochs, Domestic Cattle (Feral), Dom...                 NaN  \n",
+      "3  Domestic Sheep, Mouflon, Red Sheep, Sheep (Feral)                 NaN  \n",
+      "4                                      Wapiti Or Elk                 NaN  \n"
+     ]
+    }
+   ],
+   "source": [
+    "print species.head(5)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "collapsed": false
+   },
+   "source": [
+    "# Step 3\n",
+    "Let's start by learning a bit more about our data.  Answer each of the following questions."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "How many different species are in the `species` DataFrame?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "5824\n"
+     ]
+    }
+   ],
+   "source": [
+    "print len(species)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "What are the different values of `category` in `species`?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "['Mammal' 'Bird' 'Reptile' 'Amphibian' 'Fish' 'Vascular Plant'\n",
+      " 'Nonvascular Plant']\n"
+     ]
+    }
+   ],
+   "source": [
+    "print species.category.unique()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "###### What are the different values of `conservation_status`?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[nan 'Species of Concern' 'Endangered' 'Threatened' 'In Recovery']\n"
+     ]
+    }
+   ],
+   "source": [
+    "print species.conservation_status.unique()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "collapsed": false
+   },
+   "source": [
+    "# Step 4\n",
+    "Let's start doing some analysis!\n",
+    "\n",
+    "The column `conservation_status` has several possible values:\n",
+    "- `Species of Concern`: declining or appear to be in need of conservation\n",
+    "- `Threatened`: vulnerable to endangerment in the near future\n",
+    "- `Endangered`: seriously at risk of extinction\n",
+    "- `In Recovery`: formerly `Endangered`, but currnetly neither in danger of extinction throughout all or a significant portion of its range\n",
+    "\n",
+    "We'd like to count up how many species meet each of these criteria.  Use `groupby` to count how many `scientific_name` meet each of these criteria."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "  conservation_status  scientific_name\n",
+      "0          Endangered               16\n",
+      "1         In Recovery                4\n",
+      "2  Species of Concern              161\n",
+      "3          Threatened               10\n"
+     ]
+    }
+   ],
+   "source": [
+    "conservation_status_count = species.groupby('conservation_status').scientific_name.count().reset_index()\n",
+    "print conservation_status_count"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "As we saw before, there are far more than 200 species in the `species` table.  Clearly, only a small number of them are categorized as needing some sort of protection.  The rest have `conservation_status` equal to `None`.  Because `groupby` does not include `None`, we will need to fill in the null values.  We can do this using `.fillna`.  We pass in however we want to fill in our `None` values as an argument.\n",
+    "\n",
+    "Paste the following code and run it to see replace `None` with `No Intervention`:\n",
+    "```python\n",
+    "species.fillna('No Intervention', inplace=True)\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "species.fillna('No Intervention', inplace=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Great! Now run the same `groupby` as before to see how many species require `No Protection`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "  conservation_status  scientific_name\n",
+      "0          Endangered               16\n",
+      "1         In Recovery                4\n",
+      "2     No Intervention             5633\n",
+      "3  Species of Concern              161\n",
+      "4          Threatened               10\n"
+     ]
+    }
+   ],
+   "source": [
+    "conservation_status_count = species.groupby('conservation_status').scientific_name.count().reset_index()\n",
+    "print conservation_status_count"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Let's use `plt.bar` to create a bar chart.  First, let's sort the columns by how many species are in each categories.  We can do this using `.sort_values`.  We use the the keyword `by` to indicate which column we want to sort by.\n",
+    "\n",
+    "Paste the following code and run it to create a new DataFrame called `protection_counts`, which is sorted by `scientific_name`:\n",
+    "```python\n",
+    "protection_counts = species.groupby('conservation_status')\\\n",
+    "    .scientific_name.count().reset_index()\\\n",
+    "    .sort_values(by='scientific_name')\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "  conservation_status  scientific_name\n",
+      "1         In Recovery                4\n",
+      "4          Threatened               10\n",
+      "0          Endangered               16\n",
+      "3  Species of Concern              161\n",
+      "2     No Intervention             5633\n"
+     ]
+    }
+   ],
+   "source": [
+    "protection_counts = species.groupby('conservation_status').scientific_name.count().reset_index().sort_values(by='scientific_name')\n",
+    "\n",
+    "print protection_counts"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "Now let's create a bar chart!\n",
+    "1. Start by creating a wide figure with `figsize=(10, 4)`\n",
+    "1. Start by creating an axes object called `ax` using `plt.subplot`.\n",
+    "2. Create a bar chart whose heights are equal to `scientific_name` column of `protection_counts`.\n",
+    "3. Create an x-tick for each of the bars.\n",
+    "4. Label each x-tick with the label from `conservation_status` in `protection_counts`\n",
+    "5. Label the y-axis `Number of Species`\n",
+    "6. Title the graph `Conservation Status by Species`\n",
+    "7. Plot the grap using `plt.show()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "plt.figure(figsize=(10,4))\n",
+    "ax = plt.subplot()\n",
+    "x_values = range(5)\n",
+    "plt.bar(x_values, protection_counts.scientific_name.values)\n",
+    "ax.set_xticks(x_values)\n",
+    "ax.set_xticklabels([\"Endangered\", \"In Recovery\", \"Species of Concern\", \"Threatened\", \"No Intervention\"])\n",
+    "plt.xlabel('conservation_status')\n",
+    "plt.ylabel('Number of Species')\n",
+    "plt.title ('Conservation Status by Species')\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Step 4\n",
+    "Are certain types of species more likely to be endangered?"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Let's create a new column in `species` called `is_protected`, which is `True` if `conservation_status` is not equal to `No Intervention`, and `False` otherwise."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0       False\n",
+      "1       False\n",
+      "2       False\n",
+      "3       False\n",
+      "4       False\n",
+      "5       False\n",
+      "6       False\n",
+      "7        True\n",
+      "8        True\n",
+      "9        True\n",
+      "10      False\n",
+      "11      False\n",
+      "12      False\n",
+      "13      False\n",
+      "14      False\n",
+      "15      False\n",
+      "16      False\n",
+      "17      False\n",
+      "18      False\n",
+      "19      False\n",
+      "20      False\n",
+      "21      False\n",
+      "22      False\n",
+      "23      False\n",
+      "24      False\n",
+      "25      False\n",
+      "26      False\n",
+      "27      False\n",
+      "28      False\n",
+      "29       True\n",
+      "        ...  \n",
+      "5794    False\n",
+      "5795    False\n",
+      "5796    False\n",
+      "5797    False\n",
+      "5798    False\n",
+      "5799    False\n",
+      "5800    False\n",
+      "5801    False\n",
+      "5802    False\n",
+      "5803    False\n",
+      "5804    False\n",
+      "5805    False\n",
+      "5806    False\n",
+      "5807    False\n",
+      "5808    False\n",
+      "5809    False\n",
+      "5810    False\n",
+      "5811    False\n",
+      "5812    False\n",
+      "5813    False\n",
+      "5814    False\n",
+      "5815    False\n",
+      "5816    False\n",
+      "5817    False\n",
+      "5818    False\n",
+      "5819    False\n",
+      "5820    False\n",
+      "5821    False\n",
+      "5822    False\n",
+      "5823    False\n",
+      "Name: is_protected, dtype: bool\n"
+     ]
+    }
+   ],
+   "source": [
+    "is_protected = lambda x: True if x <> 'No Intervention' else False\n",
+    "species['is_protected'] = species.conservation_status.apply(is_protected)\n",
+    "\n",
+    "print species['is_protected']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Let's group by *both* `category` and `is_protected`.  Save your results to `category_counts`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "category_counts = species.groupby(['is_protected', 'category']).scientific_name.count().reset_index()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Examine `category_count` using `head()`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "  is_protected           category  scientific_name\n",
+      "0        False          Amphibian               73\n",
+      "1        False               Bird              442\n",
+      "2        False               Fish              116\n",
+      "3        False             Mammal              176\n",
+      "4        False  Nonvascular Plant              328\n"
+     ]
+    }
+   ],
+   "source": [
+    "print category_counts.head(5)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "collapsed": true
+   },
+   "source": [
+    "It's going to be easier to view this data if we pivot it.  Using `pivot`, rearange `category_counts` so that:\n",
+    "- `columns` is `conservation_status`\n",
+    "- `index` is `category`\n",
+    "- `values` is `scientific_name`\n",
+    "\n",
+    "Save your pivoted data to `category_pivot`. Remember to `reset_index()` at the end."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "category_pivot = category_counts.pivot(columns = 'is_protected', index = 'category', values = 'scientific_name').reset_index()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Examine `category_pivot`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "is_protected           category  False  True\n",
+      "0                     Amphibian     73     7\n",
+      "1                          Bird    442    79\n",
+      "2                          Fish    116    11\n",
+      "3                        Mammal    176    38\n",
+      "4             Nonvascular Plant    328     5\n",
+      "5                       Reptile     74     5\n",
+      "6                Vascular Plant   4424    46\n"
+     ]
+    }
+   ],
+   "source": [
+    "print category_pivot"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Use the `.columns` property to  rename the categories `True` and `False` to something more description:\n",
+    "- Leave `category` as `category`\n",
+    "- Rename `False` to `not_protected`\n",
+    "- Rename `True` to `protected`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "is_protected           category  not_protected  protected\n",
+      "0                     Amphibian             73          7\n",
+      "1                          Bird            442         79\n",
+      "2                          Fish            116         11\n",
+      "3                        Mammal            176         38\n",
+      "4             Nonvascular Plant            328          5\n",
+      "5                       Reptile             74          5\n",
+      "6                Vascular Plant           4424         46\n"
+     ]
+    }
+   ],
+   "source": [
+    "category_pivot.rename(columns={\n",
+    "    False: 'not_protected', True: 'protected'},\n",
+    "    inplace=True)\n",
+    "\n",
+    "print category_pivot"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Let's create a new column of `category_pivot` called `percent_protected`, which is equal to `protected` (the number of species that are protected) divided by `protected` plus `not_protected` (the total number of species)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "category_pivot['percent_protected'] = category_pivot.protected/category_pivot.not_protected*100"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Examine `category_pivot`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "is_protected           category  not_protected  protected  percent_protected\n",
+      "0                     Amphibian             73          7           9.589041\n",
+      "1                          Bird            442         79          17.873303\n",
+      "2                          Fish            116         11           9.482759\n",
+      "3                        Mammal            176         38          21.590909\n",
+      "4             Nonvascular Plant            328          5           1.524390\n",
+      "5                       Reptile             74          5           6.756757\n",
+      "6                Vascular Plant           4424         46           1.039783\n"
+     ]
+    }
+   ],
+   "source": [
+    "print  category_pivot"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "It looks like species in category `Mammal` are more likely to be endangered than species in `Bird`.  We're going to do a significance test to see if this statement is true.  Before you do the significance test, consider the following questions:\n",
+    "- Is the data numerical or categorical?\n",
+    "- How many pieces of data are you comparing?"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Based on those answers, you should choose to do a *chi squared test*.  In order to run a chi squared test, we'll need to create a contingency table.  Our contingency table should look like this:\n",
+    "\n",
+    "||protected|not protected|\n",
+    "|-|-|-|\n",
+    "|Mammal|?|?|\n",
+    "|Bird|?|?|\n",
+    "\n",
+    "Create a table called `contingency` and fill it in with the correct numbers"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "contingency = [[38, 176],\n",
+    "               [79, 442]]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In order to perform our chi square test, we'll need to import the correct function from scipy.  Past the following code and run it:\n",
+    "```py\n",
+    "from scipy.stats import chi2_contingency\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "from scipy.stats import chi2_contingency"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now run `chi2_contingency` with `contingency`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.445901703047\n"
+     ]
+    }
+   ],
+   "source": [
+    "contingency = [[38, 176],\n",
+    "               [79, 442]]\n",
+    "chi2, pval, dof, expected = chi2_contingency(contingency)\n",
+    "print pval"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "It looks like this difference isn't significant!\n",
+    "\n",
+    "Let's test another.  Is the difference between `Reptile` and `Mammal` significant?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.0233846521487\n"
+     ]
+    }
+   ],
+   "source": [
+    "X = [[38, 176],\n",
+    "    [5, 74]]\n",
+    "chi2, pval, dof, expected = chi2_contingency(X)\n",
+    "print pval"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Yes! It looks like there is a significant difference between `Reptile` and `Mammal`!"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Step 5"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Conservationists have been recording sightings of different species at several national parks for the past 7 days.  They've saved sent you their observations in a file called `observations.csv`.  Load `observations.csv` into a variable called `observations`, then use `head` to view the data."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "            scientific_name                            park_name  observations\n",
+      "0        Vicia benghalensis  Great Smoky Mountains National Park            68\n",
+      "1            Neovison vison  Great Smoky Mountains National Park            77\n",
+      "2         Prunus subcordata               Yosemite National Park           138\n",
+      "3      Abutilon theophrasti                  Bryce National Park            84\n",
+      "4  Githopsis specularioides  Great Smoky Mountains National Park            85\n"
+     ]
+    }
+   ],
+   "source": [
+    "observations = '/Users/miffyvo/Desktop/observations.csv'\n",
+    "observations = pd.read_csv(observations)\n",
+    "\n",
+    "print observations.head(5)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Some scientists are studying the number of sheep sightings at different national parks.  There are several different scientific names for different types of sheep.  We'd like to know which rows of `species` are referring to sheep.  Notice that the following code will tell us whether or not a word occurs in a string:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "True"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Does \"Sheep\" occur in this string?\n",
+    "str1 = 'This string contains Sheep'\n",
+    "'Sheep' in str1"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "False"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Does \"Sheep\" occur in this string?\n",
+    "str2 = 'This string contains Cows'\n",
+    "'Sheep' in str2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Use `apply` and a `lambda` function to create a new column in `species` called `is_sheep` which is `True` if the `common_names` contains `'Sheep'`, and `False` otherwise."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "species = '/Users/miffyvo/Desktop/species_info.csv'\n",
+    "species = pd.read_csv(species)\n",
+    "\n",
+    "is_sheep = lambda x: True if 'Sheep' in x else False\n",
+    "species['is_sheep'] = species.common_names.apply(is_sheep)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Select the rows of `species` where `is_sheep` is `True` and examine the results."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "  category                scientific_name  \\\n",
+      "0   Mammal  Clethrionomys gapperi gapperi   \n",
+      "1   Mammal                      Bos bison   \n",
+      "2   Mammal                     Bos taurus   \n",
+      "3   Mammal                     Ovis aries   \n",
+      "4   Mammal                 Cervus elaphus   \n",
+      "\n",
+      "                                        common_names conservation_status  \\\n",
+      "0                           Gapper's Red-Backed Vole                 NaN   \n",
+      "1                              American Bison, Bison                 NaN   \n",
+      "2  Aurochs, Aurochs, Domestic Cattle (Feral), Dom...                 NaN   \n",
+      "3  Domestic Sheep, Mouflon, Red Sheep, Sheep (Feral)                 NaN   \n",
+      "4                                      Wapiti Or Elk                 NaN   \n",
+      "\n",
+      "  is_sheep  \n",
+      "0    False  \n",
+      "1    False  \n",
+      "2    False  \n",
+      "3     True  \n",
+      "4    False  \n"
+     ]
+    }
+   ],
+   "source": [
+    "print species.head(5)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Many of the results are actually plants.  Select the rows of `species` where `is_sheep` is `True` and `category` is `Mammal`.  Save the results to the variable `sheep_species`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "     category          scientific_name  \\\n",
+      "3      Mammal               Ovis aries   \n",
+      "3014   Mammal          Ovis canadensis   \n",
+      "4446   Mammal  Ovis canadensis sierrae   \n",
+      "\n",
+      "                                           common_names conservation_status  \\\n",
+      "3     Domestic Sheep, Mouflon, Red Sheep, Sheep (Feral)                 NaN   \n",
+      "3014                       Bighorn Sheep, Bighorn Sheep  Species of Concern   \n",
+      "4446                        Sierra Nevada Bighorn Sheep          Endangered   \n",
+      "\n",
+      "     is_sheep  \n",
+      "3        True  \n",
+      "3014     True  \n",
+      "4446     True  \n"
+     ]
+    }
+   ],
+   "source": [
+    "sheep_species = species[(species.is_sheep) & (species.category == 'Mammal')]\n",
+    "print sheep_species"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now merge `sheep_species` with `observations` to get a DataFrame with observations of sheep.  Save this DataFrame as `sheep_observations`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "            scientific_name                            park_name  \\\n",
+      "0           Ovis canadensis            Yellowstone National Park   \n",
+      "1           Ovis canadensis                  Bryce National Park   \n",
+      "2           Ovis canadensis               Yosemite National Park   \n",
+      "3           Ovis canadensis  Great Smoky Mountains National Park   \n",
+      "4   Ovis canadensis sierrae            Yellowstone National Park   \n",
+      "5   Ovis canadensis sierrae               Yosemite National Park   \n",
+      "6   Ovis canadensis sierrae                  Bryce National Park   \n",
+      "7   Ovis canadensis sierrae  Great Smoky Mountains National Park   \n",
+      "8                Ovis aries               Yosemite National Park   \n",
+      "9                Ovis aries  Great Smoky Mountains National Park   \n",
+      "10               Ovis aries                  Bryce National Park   \n",
+      "11               Ovis aries            Yellowstone National Park   \n",
+      "\n",
+      "    observations category                                       common_names  \\\n",
+      "0            219   Mammal                       Bighorn Sheep, Bighorn Sheep   \n",
+      "1            109   Mammal                       Bighorn Sheep, Bighorn Sheep   \n",
+      "2            117   Mammal                       Bighorn Sheep, Bighorn Sheep   \n",
+      "3             48   Mammal                       Bighorn Sheep, Bighorn Sheep   \n",
+      "4             67   Mammal                        Sierra Nevada Bighorn Sheep   \n",
+      "5             39   Mammal                        Sierra Nevada Bighorn Sheep   \n",
+      "6             22   Mammal                        Sierra Nevada Bighorn Sheep   \n",
+      "7             25   Mammal                        Sierra Nevada Bighorn Sheep   \n",
+      "8            126   Mammal  Domestic Sheep, Mouflon, Red Sheep, Sheep (Feral)   \n",
+      "9             76   Mammal  Domestic Sheep, Mouflon, Red Sheep, Sheep (Feral)   \n",
+      "10           119   Mammal  Domestic Sheep, Mouflon, Red Sheep, Sheep (Feral)   \n",
+      "11           221   Mammal  Domestic Sheep, Mouflon, Red Sheep, Sheep (Feral)   \n",
+      "\n",
+      "   conservation_status is_sheep  \n",
+      "0   Species of Concern     True  \n",
+      "1   Species of Concern     True  \n",
+      "2   Species of Concern     True  \n",
+      "3   Species of Concern     True  \n",
+      "4           Endangered     True  \n",
+      "5           Endangered     True  \n",
+      "6           Endangered     True  \n",
+      "7           Endangered     True  \n",
+      "8                  NaN     True  \n",
+      "9                  NaN     True  \n",
+      "10                 NaN     True  \n",
+      "11                 NaN     True  \n"
+     ]
+    }
+   ],
+   "source": [
+    "sheep_observations = observations.merge(sheep_species)\n",
+    "print sheep_observations"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "How many total sheep observations (across all three species) were made at each national park?  Use `groupby` to get the `sum` of `observations` for each `park_name`.  Save your answer to `obs_by_park`.\n",
+    "\n",
+    "This is the total number of sheep observed in each park over the past 7 days."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>park_name</th>\n",
+       "      <th>observations</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>Bryce National Park</td>\n",
+       "      <td>250</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>Great Smoky Mountains National Park</td>\n",
+       "      <td>149</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>Yellowstone National Park</td>\n",
+       "      <td>507</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>Yosemite National Park</td>\n",
+       "      <td>282</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                             park_name  observations\n",
+       "0                  Bryce National Park           250\n",
+       "1  Great Smoky Mountains National Park           149\n",
+       "2            Yellowstone National Park           507\n",
+       "3               Yosemite National Park           282"
+      ]
+     },
+     "execution_count": 28,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "obs_by_park = sheep_observations.groupby('park_name').observations.sum().reset_index()\n",
+    "obs_by_park"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Create a bar chart showing the different number of observations per week at each park.\n",
+    "\n",
+    "1. Start by creating a wide figure with `figsize=(16, 4)`\n",
+    "1. Start by creating an axes object called `ax` using `plt.subplot`.\n",
+    "2. Create a bar chart whose heights are equal to `observations` column of `obs_by_park`.\n",
+    "3. Create an x-tick for each of the bars.\n",
+    "4. Label each x-tick with the label from `park_name` in `obs_by_park`\n",
+    "5. Label the y-axis `Number of Observations`\n",
+    "6. Title the graph `Observations of Sheep per Week`\n",
+    "7. Plot the grap using `plt.show()`"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "plt.figure(figsize=(16,4))\n",
+    "ax = plt.subplot()\n",
+    "ne(4)\n",
+    "plt.bar(x_values, obs_by_park.observations.values)\n",
+    "ax.set_xticks(x_values)\n",
+    "ax.set_xticklabels([\"Bryce National Park\", \"Great Smoky Mountains National Park\", \n",
+    "                    \"Yellowstone National Park\", \"Yosemite National Park\"])\n",
+    "plt.xlabel('park_name')\n",
+    "plt.ylabel('Observations')\n",
+    "plt.title ('Observations of Sheep per Week')\n",
+    "plt.show()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Our scientists know that 15% of sheep at Bryce National Park have foot and mouth disease.  Park rangers at Yellowstone National Park have been running a program to reduce the rate of foot and mouth disease at that park.  The scientists want to test whether or not this program is working.  They want to be able to detect reductions of at least 5 percentage point.  For instance, if 10% of sheep in Yellowstone have foot and mouth disease, they'd like to be able to know this, with confidence.\n",
+    "\n",
+    "Use the sample size calculator at <a href=\"https://www.optimizely.com/sample-size-calculator/\">Optimizely</a> to calculate the number of sheep that they would need to observe from each park.  Use the default level of significance (90%).\n",
+    "\n",
+    "Remember that \"Minimum Detectable Effect\" is a percent of the baseline."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "33.3333333333\n"
+     ]
+    }
+   ],
+   "source": [
+    "minimum_detectable_effect = 5.0/15*100\n",
+    "print minimum_detectable_effect"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "How many weeks would you need to observe sheep at Bryce National Park in order to observe enough sheep?  How many weeks would you need to observe at Yellowstone National Park to observe enough sheep?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "2\n",
+      "1\n"
+     ]
+    }
+   ],
+   "source": [
+    "sample_size = 520\n",
+    "\n",
+    "bryce = 510 / 250\n",
+    "yellowstone = 510 / 507\n",
+    "\n",
+    "print bryce\n",
+    "print yellowstone\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 2",
+   "language": "python",
+   "name": "python2"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
